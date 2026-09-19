@@ -26,10 +26,21 @@ let history =
 // 長期記憶
 // -------------------------
 
-let memories =
-  JSON.parse(
-    localStorage.getItem(MEMORY_KEY) || '[]'
-  );
+let memories = [];
+
+try {
+  const saved =
+    JSON.parse(
+      localStorage.getItem(MEMORY_KEY) || '[]'
+    );
+
+  memories =
+    Array.isArray(saved) ? saved : [];
+
+} catch (error) {
+  console.error('Memory load failed');
+  memories = [];
+}
 
 function saveMemories() {
   localStorage.setItem(
@@ -38,22 +49,37 @@ function saveMemories() {
   );
 }
 
-// 今後STEP 2でAIがここに記憶を追加する
 function addMemory(text) {
-  const clean = String(text || '').trim();
+  const clean =
+    String(text || '').trim();
 
   if (!clean) return;
 
-  // 同じ内容を重複保存しない
-  if (memories.some(m => m.text === clean)) {
-    return;
-  }
+  // 完全に同じ記憶は追加しない
+  const alreadyExists =
+    memories.some(
+      memory =>
+        memory.text === clean
+    );
+
+  if (alreadyExists) return;
 
   memories.push({
-    id: crypto.randomUUID(),
+    id:
+      crypto.randomUUID
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random()}`,
+
     text: clean,
     createdAt: Date.now()
   });
+
+  // 念のため保存数を制限
+  // 古いものから最大100件
+  if (memories.length > 100) {
+    memories =
+      memories.slice(-100);
+  }
 
   saveMemories();
 }
@@ -64,7 +90,9 @@ function addMemory(text) {
 
 function getAccessKey() {
   let key =
-    localStorage.getItem(ACCESS_KEY_STORAGE);
+    localStorage.getItem(
+      ACCESS_KEY_STORAGE
+    );
 
   if (!key) {
     key = window.prompt(
@@ -85,24 +113,29 @@ function getAccessKey() {
 }
 
 // -------------------------
-// 表示
+// 会話表示
 // -------------------------
 
 function render() {
   messages.innerHTML = '';
 
-  history.forEach(m => {
+  history.forEach(message => {
     const row =
       document.createElement('div');
 
     row.className =
-      `row ${m.who === 'me' ? 'me' : 'him'}`;
+      `row ${
+        message.who === 'me'
+          ? 'me'
+          : 'him'
+      }`;
 
     const bubble =
       document.createElement('div');
 
     bubble.className = 'bubble';
-    bubble.textContent = m.text;
+    bubble.textContent =
+      message.text;
 
     row.appendChild(bubble);
     messages.appendChild(row);
@@ -132,36 +165,52 @@ function add(who, text) {
 // -------------------------
 
 async function getAIReply() {
-  const accessKey = getAccessKey();
+  const accessKey =
+    getAccessKey();
 
   if (!accessKey) {
-    throw new Error('No access key');
+    throw new Error(
+      'No access key'
+    );
   }
 
-  const response = await fetch(API_URL, {
-    method: 'POST',
+  const response =
+    await fetch(API_URL, {
+      method: 'POST',
 
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Talk-Key': accessKey
-    },
+      headers: {
+        'Content-Type':
+          'application/json',
 
-    body: JSON.stringify({
-      messages: history.slice(-20),
+        'X-Talk-Key':
+          accessKey
+      },
 
-      // 長期記憶もWorkerへ送る
-      memories: memories
-        .slice(-50)
-        .map(memory => memory.text)
-    })
-  });
+      body: JSON.stringify({
+
+        // 直近20件の会話
+        messages:
+          history.slice(-20),
+
+        // 長期記憶
+        memories:
+          memories
+            .slice(-50)
+            .map(
+              memory =>
+                memory.text
+            )
+      })
+    });
 
   if (response.status === 401) {
     localStorage.removeItem(
       ACCESS_KEY_STORAGE
     );
 
-    throw new Error('Unauthorized');
+    throw new Error(
+      'Unauthorized'
+    );
   }
 
   if (!response.ok) {
@@ -170,35 +219,65 @@ async function getAIReply() {
     );
   }
 
-  const data = await response.json();
+  const data =
+    await response.json();
 
   if (!data.reply) {
-    throw new Error('No reply');
+    throw new Error(
+      'No reply'
+    );
+  }
+
+  // -------------------------
+  // 新しい長期記憶を保存
+  // -------------------------
+
+  if (
+    Array.isArray(
+      data.memoryCandidates
+    )
+  ) {
+    data.memoryCandidates
+      .slice(0, 3)
+      .forEach(candidate => {
+
+        if (
+          typeof candidate ===
+          'string'
+        ) {
+          addMemory(candidate);
+        }
+      });
   }
 
   return data.reply;
 }
 
 // -------------------------
-// 送信
+// メッセージ送信
 // -------------------------
 
 form.addEventListener(
   'submit',
-  async e => {
-    e.preventDefault();
+  async event => {
 
-    const text = input.value.trim();
+    event.preventDefault();
+
+    const text =
+      input.value.trim();
 
     if (!text) return;
 
     add('me', text);
 
     input.value = '';
-    input.style.height = 'auto';
+    input.style.height =
+      'auto';
 
     const button =
-      form.querySelector('button');
+      form.querySelector(
+        'button'
+      );
 
     button.disabled = true;
 
@@ -206,19 +285,27 @@ form.addEventListener(
       const reply =
         await getAIReply();
 
-      add('him', reply);
+      add(
+        'him',
+        reply
+      );
 
     } catch (error) {
+
       console.error(error);
 
-      if (error.message === 'Unauthorized') {
+      if (
+        error.message ===
+        'Unauthorized'
+      ) {
         add(
           'him',
           'アクセスキーが違うみたい。もう一度入力してみて。'
         );
 
       } else if (
-        error.message === 'No access key'
+        error.message ===
+        'No access key'
       ) {
         add(
           'him',
@@ -240,13 +327,15 @@ form.addEventListener(
 );
 
 // -------------------------
-// 入力欄
+// 入力欄の高さ
 // -------------------------
 
 input.addEventListener(
   'input',
   () => {
-    input.style.height = 'auto';
+
+    input.style.height =
+      'auto';
 
     input.style.height =
       Math.min(
@@ -260,13 +349,18 @@ input.addEventListener(
 // PWA
 // -------------------------
 
-if ('serviceWorker' in navigator) {
+if (
+  'serviceWorker'
+  in navigator
+) {
   window.addEventListener(
     'load',
     () => {
-      navigator.serviceWorker.register(
-        './sw.js'
-      );
+
+      navigator
+        .serviceWorker
+        .register('./sw.js');
+
     }
   );
 }
