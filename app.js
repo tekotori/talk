@@ -3,24 +3,64 @@ const form = document.getElementById('chatForm');
 const input = document.getElementById('messageInput');
 
 const KEY = 'talk-v1-messages';
-const API_URL = 'https://talk-ai.sachi-log-mitsu.workers.dev';
+const ACCESS_KEY_STORAGE = 'talk-access-key';
 
-let history = JSON.parse(localStorage.getItem(KEY) || 'null') || [
-  {
-    who: 'him',
-    text: 'お、来た。\n今日はどうだった？',
-    at: Date.now()
+const API_URL =
+  'https://talk-ai.sachi-log-mitsu.workers.dev';
+
+// -------------------------
+// 会話履歴
+// -------------------------
+
+let history =
+  JSON.parse(localStorage.getItem(KEY) || 'null') || [
+    {
+      who: 'him',
+      text: 'お、来た。\n今日はどうだった？',
+      at: Date.now()
+    }
+  ];
+
+// -------------------------
+// Talk専用アクセスキー
+// -------------------------
+
+function getAccessKey() {
+  let key = localStorage.getItem(ACCESS_KEY_STORAGE);
+
+  if (!key) {
+    key = window.prompt(
+      'Talkのアクセスキーを入力してください'
+    );
+
+    if (key) {
+      key = key.trim();
+      localStorage.setItem(
+        ACCESS_KEY_STORAGE,
+        key
+      );
+    }
   }
-];
+
+  return key;
+}
+
+// -------------------------
+// 表示
+// -------------------------
 
 function render() {
   messages.innerHTML = '';
 
   history.forEach(m => {
     const row = document.createElement('div');
-    row.className = `row ${m.who === 'me' ? 'me' : 'him'}`;
 
-    const bubble = document.createElement('div');
+    row.className =
+      `row ${m.who === 'me' ? 'me' : 'him'}`;
+
+    const bubble =
+      document.createElement('div');
+
     bubble.className = 'bubble';
     bubble.textContent = m.text;
 
@@ -28,8 +68,13 @@ function render() {
     messages.appendChild(row);
   });
 
-  messages.scrollTop = messages.scrollHeight;
-  localStorage.setItem(KEY, JSON.stringify(history));
+  messages.scrollTop =
+    messages.scrollHeight;
+
+  localStorage.setItem(
+    KEY,
+    JSON.stringify(history)
+  );
 }
 
 function add(who, text) {
@@ -42,12 +87,23 @@ function add(who, text) {
   render();
 }
 
+// -------------------------
+// AIへ送信
+// -------------------------
+
 async function getAIReply() {
+  const accessKey = getAccessKey();
+
+  if (!accessKey) {
+    throw new Error('No access key');
+  }
+
   const response = await fetch(API_URL, {
     method: 'POST',
 
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'X-Talk-Key': accessKey
     },
 
     body: JSON.stringify({
@@ -55,8 +111,19 @@ async function getAIReply() {
     })
   });
 
+  // 合言葉が違う場合
+  if (response.status === 401) {
+    localStorage.removeItem(
+      ACCESS_KEY_STORAGE
+    );
+
+    throw new Error('Unauthorized');
+  }
+
   if (!response.ok) {
-    throw new Error(`API error: ${response.status}`);
+    throw new Error(
+      `API error: ${response.status}`
+    );
   }
 
   const data = await response.json();
@@ -68,49 +135,99 @@ async function getAIReply() {
   return data.reply;
 }
 
-form.addEventListener('submit', async e => {
-  e.preventDefault();
+// -------------------------
+// 送信
+// -------------------------
 
-  const text = input.value.trim();
+form.addEventListener(
+  'submit',
+  async e => {
+    e.preventDefault();
 
-  if (!text) return;
+    const text = input.value.trim();
 
-  add('me', text);
+    if (!text) return;
 
-  input.value = '';
-  input.style.height = 'auto';
+    add('me', text);
 
-  const button = form.querySelector('button');
-  button.disabled = true;
+    input.value = '';
+    input.style.height = 'auto';
 
-  try {
-    const reply = await getAIReply();
-    add('him', reply);
+    const button =
+      form.querySelector('button');
 
-  } catch (error) {
-    console.error(error);
+    button.disabled = true;
 
-    add(
-      'him',
-      'ん、ごめん。今ちょっとうまく返せなかった。'
-    );
+    try {
+      const reply =
+        await getAIReply();
 
-  } finally {
-    button.disabled = false;
-    input.focus();
+      add('him', reply);
+
+    } catch (error) {
+
+      console.error(error);
+
+      if (
+        error.message === 'Unauthorized'
+      ) {
+        add(
+          'him',
+          'アクセスキーが違うみたい。もう一度入力してみて。'
+        );
+
+      } else if (
+        error.message === 'No access key'
+      ) {
+        add(
+          'him',
+          'アクセスキーを入力すると話せるよ。'
+        );
+
+      } else {
+        add(
+          'him',
+          'ん、ごめん。今ちょっとうまく返せなかった。'
+        );
+      }
+
+    } finally {
+      button.disabled = false;
+      input.focus();
+    }
   }
-});
+);
 
-input.addEventListener('input', () => {
-  input.style.height = 'auto';
-  input.style.height =
-    Math.min(input.scrollHeight, 120) + 'px';
-});
+// -------------------------
+// 入力欄
+// -------------------------
+
+input.addEventListener(
+  'input',
+  () => {
+    input.style.height = 'auto';
+
+    input.style.height =
+      Math.min(
+        input.scrollHeight,
+        120
+      ) + 'px';
+  }
+);
+
+// -------------------------
+// PWA
+// -------------------------
 
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js');
-  });
+  window.addEventListener(
+    'load',
+    () => {
+      navigator.serviceWorker.register(
+        './sw.js'
+      );
+    }
+  );
 }
 
 render();
