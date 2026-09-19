@@ -159,10 +159,10 @@ self.addEventListener(
     event.notification.close();
 
     const targetUrl =
-      new URL(
-        event.notification.data?.url || './',
-        self.location.origin
-      ).href;
+  new URL(
+    event.notification.data?.url || './',
+    self.registration.scope
+  ).href;
 
     event.waitUntil(
       clients
