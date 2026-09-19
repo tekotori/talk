@@ -158,7 +158,83 @@ function add(who, text) {
 
   render();
 }
+// -------------------------
+// 自発メッセージを受け取る
+// -------------------------
 
+async function getPendingMessage() {
+
+  const accessKey =
+    getAccessKey();
+
+  if (!accessKey) return;
+
+  try {
+
+    const response =
+      await fetch(
+        `${API_URL}/messages/pending`,
+        {
+          method: 'POST',
+
+          headers: {
+            'Content-Type':
+              'application/json',
+
+            'X-Talk-Key':
+              accessKey
+          }
+        }
+      );
+
+    if (!response.ok) {
+      console.error(
+        'Pending message error:',
+        response.status
+      );
+      return;
+    }
+
+    const data =
+      await response.json();
+
+    if (
+      !data.message ||
+      !data.message.text
+    ) {
+      return;
+    }
+
+    // 同じメッセージの二重追加を防ぐ
+    const alreadyExists =
+      history.some(message =>
+        message.who === 'him' &&
+        message.text ===
+          data.message.text &&
+        message.at ===
+          data.message.at
+      );
+
+    if (alreadyExists) return;
+
+    history.push({
+      who: 'him',
+      text: data.message.text,
+      at:
+        data.message.at ||
+        Date.now()
+    });
+
+    render();
+
+  } catch (error) {
+
+    console.error(
+      'Pending message fetch failed:',
+      error
+    );
+  }
+}
 // -------------------------
 // AIへ送信
 // -------------------------
@@ -647,3 +723,4 @@ window.addEventListener(
 );
 
 render();
+getPendingMessage();
