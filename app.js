@@ -3,6 +3,7 @@ const form = document.getElementById('chatForm');
 const input = document.getElementById('messageInput');
 
 const KEY = 'talk-v1-messages';
+const MEMORY_KEY = 'talk-long-term-memory';
 const ACCESS_KEY_STORAGE = 'talk-access-key';
 
 const API_URL =
@@ -22,11 +23,48 @@ let history =
   ];
 
 // -------------------------
+// 長期記憶
+// -------------------------
+
+let memories =
+  JSON.parse(
+    localStorage.getItem(MEMORY_KEY) || '[]'
+  );
+
+function saveMemories() {
+  localStorage.setItem(
+    MEMORY_KEY,
+    JSON.stringify(memories)
+  );
+}
+
+// 今後STEP 2でAIがここに記憶を追加する
+function addMemory(text) {
+  const clean = String(text || '').trim();
+
+  if (!clean) return;
+
+  // 同じ内容を重複保存しない
+  if (memories.some(m => m.text === clean)) {
+    return;
+  }
+
+  memories.push({
+    id: crypto.randomUUID(),
+    text: clean,
+    createdAt: Date.now()
+  });
+
+  saveMemories();
+}
+
+// -------------------------
 // Talk専用アクセスキー
 // -------------------------
 
 function getAccessKey() {
-  let key = localStorage.getItem(ACCESS_KEY_STORAGE);
+  let key =
+    localStorage.getItem(ACCESS_KEY_STORAGE);
 
   if (!key) {
     key = window.prompt(
@@ -35,6 +73,7 @@ function getAccessKey() {
 
     if (key) {
       key = key.trim();
+
       localStorage.setItem(
         ACCESS_KEY_STORAGE,
         key
@@ -53,7 +92,8 @@ function render() {
   messages.innerHTML = '';
 
   history.forEach(m => {
-    const row = document.createElement('div');
+    const row =
+      document.createElement('div');
 
     row.className =
       `row ${m.who === 'me' ? 'me' : 'him'}`;
@@ -107,11 +147,15 @@ async function getAIReply() {
     },
 
     body: JSON.stringify({
-      messages: history.slice(-20)
+      messages: history.slice(-20),
+
+      // 長期記憶もWorkerへ送る
+      memories: memories
+        .slice(-50)
+        .map(memory => memory.text)
     })
   });
 
-  // 合言葉が違う場合
   if (response.status === 401) {
     localStorage.removeItem(
       ACCESS_KEY_STORAGE
@@ -165,12 +209,9 @@ form.addEventListener(
       add('him', reply);
 
     } catch (error) {
-
       console.error(error);
 
-      if (
-        error.message === 'Unauthorized'
-      ) {
+      if (error.message === 'Unauthorized') {
         add(
           'him',
           'アクセスキーが違うみたい。もう一度入力してみて。'
