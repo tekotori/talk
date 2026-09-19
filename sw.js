@@ -159,10 +159,10 @@ self.addEventListener(
     event.notification.close();
 
     const targetUrl =
-  new URL(
-    event.notification.data?.url || './',
-    self.registration.scope
-  ).href;
+      new URL(
+        './',
+        self.registration.scope
+      ).href;
 
     event.waitUntil(
       clients
@@ -172,24 +172,20 @@ self.addEventListener(
         })
         .then(windowClients => {
 
-          for (
-            const client
-            of windowClients
-          ) {
+          // Talkがすでに開いていたら
+          // URLを変更せず、その画面を前面に出す
+          for (const client of windowClients) {
 
             if (
               client.url.startsWith(
-                self.location.origin
+                self.registration.scope
               )
             ) {
-              client.navigate(
-                targetUrl
-              );
-
               return client.focus();
             }
           }
 
+          // Talkが開いていない場合だけ新しく開く
           return clients.openWindow(
             targetUrl
           );
