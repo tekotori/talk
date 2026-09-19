@@ -1,6 +1,8 @@
 const messages = document.getElementById('messages');
 const form = document.getElementById('chatForm');
 const input = document.getElementById('messageInput');
+const notificationButton =
+  document.getElementById('notificationButton');
 
 const KEY = 'talk-v1-messages';
 const MEMORY_KEY = 'talk-long-term-memory';
@@ -55,7 +57,6 @@ function addMemory(text) {
 
   if (!clean) return;
 
-  // 完全に同じ記憶は追加しない
   const alreadyExists =
     memories.some(
       memory =>
@@ -74,8 +75,6 @@ function addMemory(text) {
     createdAt: Date.now()
   });
 
-  // 念のため保存数を制限
-  // 古いものから最大100件
   if (memories.length > 100) {
     memories =
       memories.slice(-100);
@@ -187,12 +186,9 @@ async function getAIReply() {
       },
 
       body: JSON.stringify({
-
-        // 直近20件の会話
         messages:
           history.slice(-20),
 
-        // 長期記憶
         memories:
           memories
             .slice(-50)
@@ -227,10 +223,6 @@ async function getAIReply() {
       'No reply'
     );
   }
-
-  // -------------------------
-  // 新しい長期記憶を保存
-  // -------------------------
 
   if (
     Array.isArray(
@@ -346,23 +338,312 @@ input.addEventListener(
 );
 
 // -------------------------
-// PWA
+// Base64 URL → Uint8Array
+// Push購読用
 // -------------------------
 
-if (
-  'serviceWorker'
-  in navigator
+function urlBase64ToUint8Array(
+  base64String
 ) {
-  window.addEventListener(
-    'load',
-    () => {
+  const padding =
+    '='.repeat(
+      (4 - base64String.length % 4) % 4
+    );
 
-      navigator
-        .serviceWorker
-        .register('./sw.js');
+  const base64 =
+    (base64String + padding)
+      .replace(/-/g, '+')
+      .replace(/_/g, '/');
 
-    }
+  const rawData =
+    window.atob(base64);
+
+  return Uint8Array.from(
+    [...rawData].map(
+      char =>
+        char.charCodeAt(0)
+    )
   );
 }
+
+// -------------------------
+// Service Worker
+// -------------------------
+
+async function getServiceWorker() {
+  if (
+    !('serviceWorker' in navigator)
+  ) {
+    throw new Error(
+      'Service Worker unsupported'
+    );
+  }
+
+  await navigator
+    .serviceWorker
+    .register('./sw.js');
+
+  return navigator
+    .serviceWorker
+    .ready;
+}
+
+// -------------------------
+// Push通知をON
+// -------------------------
+
+async function enableNotifications() {
+
+  if (
+    !('Notification' in window) ||
+    !('PushManager' in window)
+  ) {
+    alert(
+      'この環境ではPush通知を利用できません。'
+    );
+    return;
+  }
+
+  const accessKey =
+    getAccessKey();
+
+  if (!accessKey) {
+    return;
+  }
+
+  notificationButton.disabled = true;
+  notificationButton.textContent =
+    '設定中…';
+
+  try {
+
+    // -------------------------
+    // iPhoneに通知許可を求める
+    // -------------------------
+
+    const permission =
+      await Notification
+        .requestPermission();
+
+    if (
+      permission !== 'granted'
+    ) {
+      notificationButton.textContent =
+        '通知をON';
+
+      alert(
+        '通知が許可されませんでした。'
+      );
+
+      return;
+    }
+
+    // -------------------------
+    // Service Worker取得
+    // -------------------------
+
+    const registration =
+      await getServiceWorker();
+
+    // -------------------------
+    // VAPID公開鍵を取得
+    // -------------------------
+
+    const keyResponse =
+      await fetch(
+        `${API_URL}/push/public-key`,
+        {
+          method: 'POST',
+
+          headers: {
+            'Content-Type':
+              'application/json',
+
+            'X-Talk-Key':
+              accessKey
+          },
+
+          body: JSON.stringify({})
+        }
+      );
+
+    if (!keyResponse.ok) {
+      throw new Error(
+        'Public key error'
+      );
+    }
+
+    const keyData =
+      await keyResponse.json();
+
+    if (!keyData.publicKey) {
+      throw new Error(
+        'No public key'
+      );
+    }
+
+    // -------------------------
+    // 既存購読を確認
+    // -------------------------
+
+    let subscription =
+      await registration
+        .pushManager
+        .getSubscription();
+
+    // -------------------------
+    // 未購読ならPush購読
+    // -------------------------
+
+    if (!subscription) {
+      subscription =
+        await registration
+          .pushManager
+          .subscribe({
+            userVisibleOnly: true,
+
+            applicationServerKey:
+              urlBase64ToUint8Array(
+                keyData.publicKey
+              )
+          });
+    }
+
+    // -------------------------
+    // KVへ購読情報を保存
+    // -------------------------
+
+    const subscribeResponse =
+      await fetch(
+        `${API_URL}/push/subscribe`,
+        {
+          method: 'POST',
+
+          headers: {
+            'Content-Type':
+              'application/json',
+
+            'X-Talk-Key':
+              accessKey
+          },
+
+          body: JSON.stringify({
+            subscription:
+              subscription.toJSON()
+          })
+        }
+      );
+
+    if (!subscribeResponse.ok) {
+      throw new Error(
+        'Subscribe save error'
+      );
+    }
+
+    notificationButton.textContent =
+      '通知ON ✓';
+
+  } catch (error) {
+
+    console.error(
+      'Push setup failed:',
+      error
+    );
+
+    notificationButton.textContent =
+      '通知をON';
+
+    alert(
+      '通知の設定がうまくできませんでした。'
+    );
+
+  } finally {
+    notificationButton.disabled =
+      false;
+  }
+}
+
+// -------------------------
+// 通知ボタン
+// -------------------------
+
+if (notificationButton) {
+  notificationButton
+    .addEventListener(
+      'click',
+      enableNotifications
+    );
+}
+
+// -------------------------
+// 起動時に通知状態を確認
+// -------------------------
+
+async function updateNotificationButton() {
+
+  if (!notificationButton) {
+    return;
+  }
+
+  if (
+    !('Notification' in window) ||
+    !('serviceWorker' in navigator) ||
+    !('PushManager' in window)
+  ) {
+    notificationButton.textContent =
+      '通知非対応';
+
+    return;
+  }
+
+  if (
+    Notification.permission !==
+    'granted'
+  ) {
+    notificationButton.textContent =
+      '通知をON';
+
+    return;
+  }
+
+  try {
+    const registration =
+      await getServiceWorker();
+
+    const subscription =
+      await registration
+        .pushManager
+        .getSubscription();
+
+    notificationButton.textContent =
+      subscription
+        ? '通知ON ✓'
+        : '通知をON';
+
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// -------------------------
+// PWA起動
+// -------------------------
+
+window.addEventListener(
+  'load',
+  async () => {
+
+    try {
+      await getServiceWorker();
+    } catch (error) {
+      console.error(
+        'Service Worker error:',
+        error
+      );
+    }
+
+    updateNotificationButton();
+  }
+);
 
 render();
