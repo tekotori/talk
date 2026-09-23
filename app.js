@@ -742,6 +742,34 @@ window.addEventListener(
     updateNotificationButton();
   }
 );
+// -------------------------
+// トーク一覧 ⇄ チャット
+// -------------------------
 
+function showTalkList() {
+  talkListScreen.hidden = false;
+  chatScreen.hidden = true;
+}
+
+function showKoheiChat() {
+  talkListScreen.hidden = true;
+  chatScreen.hidden = false;
+
+  render();
+
+  setTimeout(() => {
+    input.focus();
+  }, 100);
+}
+
+openKoheiChat.addEventListener(
+  'click',
+  showKoheiChat
+);
+
+backToTalkList.addEventListener(
+  'click',
+  showTalkList
+);
 render();
 getPendingMessage();
