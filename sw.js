@@ -1,4 +1,4 @@
-const CACHE = 'talk-v8';
+const CACHE = 'talk-v9';
 
 const ASSETS = [
   './',
