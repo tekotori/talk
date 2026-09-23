@@ -1,6 +1,27 @@
 const messages = document.getElementById('messages');
 const form = document.getElementById('chatForm');
 const input = document.getElementById('messageInput');
+// -------------------------
+// 画面切り替え
+// -------------------------
+
+const talkListScreen =
+  document.getElementById('talkListScreen');
+
+const chatScreen =
+  document.getElementById('chatScreen');
+
+const openKoheiChat =
+  document.getElementById('openKoheiChat');
+
+const backToTalkList =
+  document.getElementById('backToTalkList');
+
+const koheiLastMessage =
+  document.getElementById('koheiLastMessage');
+
+const koheiLastTime =
+  document.getElementById('koheiLastTime');
 const notificationButton =
   document.getElementById('notificationButton');
 
