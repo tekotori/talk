@@ -743,6 +743,41 @@ window.addEventListener(
   }
 );
 // -------------------------
+// トーク一覧の最新メッセージ
+// -------------------------
+
+function updateTalkPreview() {
+
+  if (!history.length) return;
+
+  const lastMessage =
+    history[history.length - 1];
+
+  if (koheiLastMessage) {
+    koheiLastMessage.textContent =
+      lastMessage.text
+        .replace(/\n/g, ' ')
+        .slice(0, 40);
+  }
+
+  if (
+    koheiLastTime &&
+    lastMessage.at
+  ) {
+    const date =
+      new Date(lastMessage.at);
+
+    koheiLastTime.textContent =
+      date.toLocaleTimeString(
+        'ja-JP',
+        {
+          hour: '2-digit',
+          minute: '2-digit'
+        }
+      );
+  }
+}
+// -------------------------
 // トーク一覧 ⇄ チャット
 // -------------------------
 
