@@ -12,8 +12,8 @@ body {
     "Segoe UI",
     "Noto Sans JP",
     sans-serif;
-  background: #eeeae6;
-  color: #262626;
+  color: #24313d;
+  background: #e9edef;
 }
 
 body {
@@ -21,50 +21,57 @@ body {
   justify-content: center;
 }
 
-/* =========================
-   共通画面
-========================= */
+button,
+textarea {
+  font-family: inherit;
+}
 
 .screen {
   width: 100%;
   max-width: 720px;
   height: 100dvh;
-  background: #f7f4f1;
 }
 
-/* hidden属性を確実に効かせる */
 [hidden] {
   display: none !important;
 }
 
 
 /* =========================
-   トーク一覧
+   Talk一覧
 ========================= */
 
 .talk-list-screen {
-  background: #f7f4f1;
+  background: #ffffff;
 }
 
 .list-header {
+  height: calc(72px + env(safe-area-inset-top));
   padding:
-    calc(18px + env(safe-area-inset-top))
+    env(safe-area-inset-top)
     20px
     14px;
 
-  background: rgba(255, 255, 255, 0.94);
-  border-bottom: 1px solid #e8e3df;
+  display: flex;
+  align-items: flex-end;
+
+  background: #ffffff;
+  border-bottom: 1px solid #edf0f2;
 }
 
 .list-header h1 {
   margin: 0;
-  font-size: 28px;
-  line-height: 1.2;
-  letter-spacing: -0.4px;
+
+  font-size: 27px;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+
+  color: #25323e;
 }
 
 .talk-list {
-  background: #fff;
+  background: #ffffff;
 }
 
 .talk-item {
@@ -75,44 +82,45 @@ body {
   align-items: center;
   gap: 13px;
 
-  padding: 11px 16px;
+  padding: 12px 18px;
 
   border: 0;
-  border-radius: 0;
-  border-bottom: 1px solid #eeeae6;
+  border-bottom: 1px solid #edf0f2;
 
-  background: #fff;
-  color: #262626;
+  background: #ffffff;
+  color: inherit;
 
   text-align: left;
   cursor: pointer;
 }
 
 .talk-item:active {
-  background: #f5f3f1;
+  background: #f6f8f9;
 }
-
-
-/* 仮の犬アイコン */
 
 .talk-avatar {
-  width: 54px;
-  height: 54px;
+  width: 52px;
+  height: 52px;
+  min-width: 52px;
 
-  flex: 0 0 54px;
+  flex: 0 0 52px;
+
+  padding: 0;
+  overflow: hidden;
 
   border-radius: 50%;
-
-  display: grid;
-  place-items: center;
-
-  background: #e6e0da;
-
-  font-size: 28px;
+  background: #f1eee9;
 }
 
+.kohei-avatar-image {
+  width: 100%;
+  height: 100%;
 
-/* トーク情報 */
+  display: block;
+
+  object-fit: cover;
+  border-radius: 50%;
+}
 
 .talk-info {
   min-width: 0;
@@ -130,6 +138,8 @@ body {
 
   font-size: 16px;
   font-weight: 700;
+
+  color: #25323e;
 }
 
 .talk-time {
@@ -137,7 +147,8 @@ body {
 
   font-size: 11px;
   font-weight: 400;
-  color: #999;
+
+  color: #a1a9af;
 }
 
 .talk-preview {
@@ -147,9 +158,11 @@ body {
   white-space: nowrap;
   text-overflow: ellipsis;
 
-  font-size: 14px;
+  font-size: 13px;
+  line-height: 1.4;
   font-weight: 400;
-  color: #888;
+
+  color: #818b93;
 }
 
 
@@ -160,75 +173,83 @@ body {
 .app {
   display: grid;
   grid-template-rows: auto 1fr auto;
+
+  background: #dfe8ed;
 }
 
 
 /* =========================
-   上部バー
+   チャット上部
 ========================= */
 
 .topbar {
+  min-height: 62px;
+
   padding:
-    calc(9px + env(safe-area-inset-top))
+    calc(8px + env(safe-area-inset-top))
     12px
-    9px;
+    8px;
 
   display: flex;
-  gap: 10px;
   align-items: center;
+  gap: 10px;
 
-  background: rgba(255, 255, 255, 0.94);
+  background: rgba(255, 255, 255, 0.97);
 
-  border-bottom: 1px solid #e8e3df;
+  border-bottom: 1px solid #e7ebed;
 }
 
 .back-button {
-  width: 34px;
-  height: 42px;
+  width: 30px;
+  height: 40px;
+
+  flex: 0 0 30px;
 
   padding: 0;
 
   display: grid;
   place-items: center;
 
-  background: transparent;
-  color: #555;
-
   border: 0;
-  border-radius: 50%;
+  background: transparent;
 
-  font-size: 34px;
+  color: #63717c;
+
+  font-size: 32px;
   font-weight: 300;
   line-height: 1;
+
+  cursor: pointer;
 }
 
 .avatar {
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
 
-  flex: 0 0 42px;
+  flex: 0 0 40px;
+
+  padding: 0;
+  overflow: hidden;
 
   border-radius: 50%;
-
-  background: #e6e0da;
-
-  display: grid;
-  place-items: center;
-
-  font-size: 22px;
-  font-weight: 700;
+  background: #f1eee9;
 }
 
 .name {
-  font-size: 16px;
+  font-size: 15px;
+  line-height: 1.2;
   font-weight: 700;
+
+  color: #25323e;
 }
 
 .status {
-  margin-top: 2px;
+  margin-top: 3px;
 
-  font-size: 11px;
-  color: #999;
+  font-size: 10px;
+  line-height: 1;
+
+  color: #9aa4ab;
 }
 
 .notification-button {
@@ -237,12 +258,12 @@ body {
   padding: 7px 8px;
 
   border: 0;
-  border-radius: 10px;
+  border-radius: 9px;
 
   background: transparent;
-  color: #777;
+  color: #89939a;
 
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 500;
 
   cursor: pointer;
@@ -250,65 +271,78 @@ body {
 
 
 /* =========================
-   メッセージ
+   メッセージ部分
 ========================= */
 
 .messages {
   overflow-y: auto;
 
-  padding: 18px 14px 24px;
+  padding: 18px 14px 26px;
 
   display: flex;
   flex-direction: column;
-  gap: 9px;
+  gap: 10px;
 
-  background: #f7f4f1;
+  background: #dfe8ed;
 
   overscroll-behavior: contain;
 }
 
 .row {
   display: flex;
+  align-items: flex-end;
 }
 
 .row.me {
   justify-content: flex-end;
 }
 
+.row.him {
+  justify-content: flex-start;
+}
+
 .bubble {
-  max-width: 78%;
+  max-width: 76%;
 
-  padding: 10px 13px;
+  padding: 9px 13px;
 
-  border-radius: 18px;
+  border-radius: 17px;
 
+  background: #ffffff;
+
+  font-size: 15px;
   line-height: 1.5;
+
   white-space: pre-wrap;
   word-break: break-word;
 
-  background: #fff;
-
   box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.04);
+    0 1px 2px rgba(45, 59, 69, 0.05);
 }
 
+/* 自分 */
 .me .bubble {
-  background: #dfe9d8;
+  background: #f3ded9;
 
   border-bottom-right-radius: 5px;
 }
 
+/* 航平 */
 .him .bubble {
+  background: #ffffff;
+
   border-bottom-left-radius: 5px;
 }
 
 .time {
   align-self: flex-end;
 
-  margin: 0 5px 2px;
+  margin: 0 5px 3px;
 
-  font-size: 10px;
-  color: #999;
+  font-size: 9px;
+  line-height: 1;
+
+  color: #89969e;
 }
 
 
@@ -318,72 +352,78 @@ body {
 
 .composer {
   padding:
-    9px
+    8px
     10px
-    calc(9px + env(safe-area-inset-bottom));
+    calc(8px + env(safe-area-inset-bottom));
 
   display: flex;
-  gap: 8px;
   align-items: flex-end;
+  gap: 8px;
 
-  background: rgba(255, 255, 255, 0.96);
+  background: rgba(255, 255, 255, 0.98);
 
-  border-top: 1px solid #e8e3df;
+  border-top: 1px solid #e3e8ea;
 }
 
 textarea {
   flex: 1;
 
-  min-height: 42px;
+  min-height: 40px;
   max-height: 120px;
+
+  padding: 9px 14px;
 
   resize: none;
 
-  border: 1px solid #dedbd8;
-  border-radius: 21px;
-
-  padding: 10px 14px;
-
-  background: #fafafa;
-
-  font: inherit;
-  font-size: 16px;
+  border: 1px solid #dce2e5;
+  border-radius: 20px;
 
   outline: none;
+
+  background: #f7f8f8;
+  color: #25323e;
+
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+textarea::placeholder {
+  color: #a4abb0;
 }
 
 textarea:focus {
-  border-color: #c8c3bf;
-  background: #fff;
+  background: #ffffff;
+  border-color: #bdc8ce;
 }
 
 
-/* 送信ボタン */
+/* 送信 */
 
 .composer button {
-  min-width: 58px;
-  height: 42px;
+  min-width: 54px;
+  height: 40px;
 
-  padding: 0 15px;
+  padding: 0 14px;
 
   border: 0;
-  border-radius: 21px;
+  border-radius: 20px;
 
-  background: #3d4852;
-  color: #fff;
+  background: #667b89;
+  color: #ffffff;
 
+  font-size: 13px;
   font-weight: 700;
 
   cursor: pointer;
 }
 
 .composer button:disabled {
-  opacity: 0.45;
+  opacity: 0.4;
 }
 
 
 /* =========================
-   小さい画面
+   小さいiPhone
 ========================= */
 
 @media (max-width: 480px) {
@@ -394,133 +434,7 @@ textarea:focus {
   }
 
   .bubble {
-    max-width: 82%;
+    max-width: 80%;
   }
 
-}
-/* 航平プロフィール画像 */
-.kohei-avatar-image {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: cover;
-  border-radius: 50%;
-}
-
-/* トーク一覧のアイコン */
-.talk-item .talk-avatar {
-  width: 52px !important;
-  height: 52px !important;
-  min-width: 52px;
-  max-width: 52px;
-  min-height: 52px;
-  max-height: 52px;
-  flex: 0 0 52px;
-  padding: 0;
-  overflow: hidden;
-  border-radius: 50%;
-  background: #eee9e3;
-}
-
-.talk-item .talk-avatar .kohei-avatar-image {
-  width: 52px !important;
-  height: 52px !important;
-  max-width: 52px;
-  display: block;
-  object-fit: cover;
-  border-radius: 50%;
-}
-
-/* チャット上部のアイコン */
-.avatar {
-  width: 40px;
-  height: 40px;
-  flex: 0 0 40px;
-  padding: 0;
-  overflow: hidden;
-  border-radius: 50%;
-  background: #eee9e3;
-}
-/* =========================
-   Talk一覧
-========================= */
-
-.talk-list-screen {
-  background: #ffffff;
-}
-
-.list-header {
-  height: 72px;
-  display: flex;
-  align-items: flex-end;
-  padding: 0 20px 14px;
-  background: #ffffff;
-  border-bottom: 1px solid #eeeeee;
-}
-
-.list-header h1 {
-  margin: 0;
-  font-size: 28px;
-  line-height: 1;
-  font-weight: 700;
-  letter-spacing: -0.5px;
-  color: #172332;
-}
-
-.talk-list {
-  background: #ffffff;
-}
-
-.talk-item {
-  width: 100%;
-  min-height: 78px;
-  display: flex;
-  align-items: center;
-  gap: 13px;
-  padding: 12px 18px;
-  border: 0;
-  border-bottom: 1px solid #eeeeee;
-  background: #ffffff;
-  text-align: left;
-  font: inherit;
-  cursor: pointer;
-}
-
-.talk-item:active {
-  background: #f6f8f9;
-}
-
-.talk-info {
-  min-width: 0;
-  flex: 1;
-}
-
-.talk-item-top {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.talk-name {
-  flex: 1;
-  font-size: 16px;
-  font-weight: 700;
-  color: #172332;
-}
-
-.talk-time {
-  flex: 0 0 auto;
-  font-size: 12px;
-  font-weight: 400;
-  color: #9aa2aa;
-}
-
-.talk-preview {
-  margin-top: 5px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  font-size: 13px;
-  line-height: 1.4;
-  color: #7d8790;
 }
