@@ -17,39 +17,109 @@
 </head>
 
 <body>
-  <main class="app">
+<body>
+
+  <!-- =========================
+       トーク一覧
+  ========================== -->
+  <main id="talkListScreen" class="screen talk-list-screen">
+
+    <header class="list-header">
+      <h1>Talk</h1>
+    </header>
+
+    <section class="talk-list">
+
+      <button
+        id="openKoheiChat"
+        class="talk-item"
+        type="button"
+      >
+
+        <div class="talk-avatar">
+          🐶
+        </div>
+
+        <div class="talk-info">
+
+          <div class="talk-item-top">
+            <div class="talk-name">
+              航平
+            </div>
+
+            <div
+              id="koheiLastTime"
+              class="talk-time"
+            ></div>
+          </div>
+
+          <div
+            id="koheiLastMessage"
+            class="talk-preview"
+          >
+            メッセージ
+          </div>
+
+        </div>
+
+      </button>
+
+    </section>
+
+  </main>
+
+
+  <!-- =========================
+       航平とのチャット
+  ========================== -->
+  <main
+    id="chatScreen"
+    class="app screen"
+    hidden
+  >
 
     <header class="topbar">
 
-      <div class="avatar">T</div>
+      <button
+        id="backToTalkList"
+        class="back-button"
+        type="button"
+        aria-label="トーク一覧へ戻る"
+      >
+        ‹
+      </button>
+
+      <div class="avatar">
+        🐶
+      </div>
 
       <div>
-        <div class="name">Talk</div>
-        <div class="status">online</div>
+        <div class="name">
+          航平
+        </div>
+
+        <div class="status">
+          online
+        </div>
       </div>
 
       <button
         id="notificationButton"
         type="button"
-        style="
-          margin-left:auto;
-          border:0;
-          background:transparent;
-          font-size:13px;
-          padding:8px;
-          cursor:pointer;
-        "
+        class="notification-button"
       >
         通知をON
       </button>
 
     </header>
 
+
     <section
       id="messages"
       class="messages"
       aria-live="polite"
     ></section>
+
 
     <form
       id="chatForm"
@@ -71,6 +141,7 @@
 
   </main>
 
+
   <script src="./app.js"></script>
+
 </body>
-</html>
