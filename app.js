@@ -153,12 +153,38 @@ function render() {
     const bubble =
       document.createElement('div');
 
-    bubble.className = 'bubble';
-    bubble.textContent =
-      message.text;
+   bubble.className = 'bubble';
+bubble.textContent =
+  message.text;
 
-    row.appendChild(bubble);
-    messages.appendChild(row);
+const time =
+  document.createElement('div');
+
+time.className = 'time';
+
+if (message.at) {
+  const date =
+    new Date(message.at);
+
+  time.textContent =
+    date.toLocaleTimeString(
+      'ja-JP',
+      {
+        hour: '2-digit',
+        minute: '2-digit'
+      }
+    );
+}
+
+if (message.who === 'me') {
+  row.appendChild(time);
+  row.appendChild(bubble);
+} else {
+  row.appendChild(bubble);
+  row.appendChild(time);
+}
+
+messages.appendChild(row);
   });
 
   messages.scrollTop =
