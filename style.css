@@ -408,14 +408,27 @@ textarea:focus {
 }
 
 /* トーク一覧のアイコン */
-.talk-avatar {
-  width: 52px;
-  height: 52px;
+.talk-item .talk-avatar {
+  width: 52px !important;
+  height: 52px !important;
+  min-width: 52px;
+  max-width: 52px;
+  min-height: 52px;
+  max-height: 52px;
   flex: 0 0 52px;
   padding: 0;
   overflow: hidden;
   border-radius: 50%;
   background: #eee9e3;
+}
+
+.talk-item .talk-avatar .kohei-avatar-image {
+  width: 52px !important;
+  height: 52px !important;
+  max-width: 52px;
+  display: block;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 /* チャット上部のアイコン */
