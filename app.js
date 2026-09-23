@@ -808,4 +808,21 @@ backToTalkList.addEventListener(
   showTalkList
 );
 render();
+
+const params =
+  new URLSearchParams(window.location.search);
+
+if (params.get('chat') === 'kohei') {
+  showKoheiChat();
+
+  // URLだけ通常状態に戻す
+  window.history.replaceState(
+    {},
+    '',
+    window.location.pathname
+  );
+} else {
+  showTalkList();
+}
+
 getPendingMessage();
