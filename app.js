@@ -168,6 +168,7 @@ function render() {
     KEY,
     JSON.stringify(history)
   );
+  updateTalkPreview();
 }
 
 function add(who, text) {
