@@ -158,11 +158,11 @@ self.addEventListener(
 
     event.notification.close();
 
-    const targetUrl =
-      new URL(
-        './',
-        self.registration.scope
-      ).href;
+const targetUrl =
+  new URL(
+    './?chat=kohei',
+    self.registration.scope
+  ).href;
 
     event.waitUntil(
       clients
@@ -176,13 +176,15 @@ self.addEventListener(
           // URLを変更せず、その画面を前面に出す
           for (const client of windowClients) {
 
-            if (
-              client.url.startsWith(
-                self.registration.scope
-              )
-            ) {
-              return client.focus();
-            }
+if (
+  client.url.startsWith(
+    self.registration.scope
+  )
+) {
+  return client
+    .navigate(targetUrl)
+    .then(client => client.focus());
+}
           }
 
           // Talkが開いていない場合だけ新しく開く
